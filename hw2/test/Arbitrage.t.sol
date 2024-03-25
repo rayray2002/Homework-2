@@ -6,7 +6,11 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {ISwapV2Router02} from "../src/Arbitrage.sol";
 
 contract Token is ERC20 {
-    constructor(string memory name, string memory symbol, uint256 initialMint) ERC20(name, symbol) {
+    constructor(
+        string memory name,
+        string memory symbol,
+        uint256 initialMint
+    ) ERC20(name, symbol) {
         _mint(msg.sender, initialMint);
     }
 }
@@ -19,9 +23,15 @@ contract Arbitrage is Test {
     Token tokenE;
     address owner = makeAddr("owner");
     address arbitrager = makeAddr("arbitrageMan");
-    ISwapV2Router02 router = ISwapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
+    ISwapV2Router02 router =
+        ISwapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
 
-    function _addLiquidity(address token0, address token1, uint256 token0Amount, uint256 token1Amount) internal {
+    function _addLiquidity(
+        address token0,
+        address token1,
+        uint256 token0Amount,
+        uint256 token1Amount
+    ) internal {
         router.addLiquidity(
             token0,
             token1,
@@ -79,6 +89,50 @@ contract Arbitrage is Test {
         /**
          * Please add your solution below
          */
+        //  TODO
+        // console.log("Liquidity tokenA: %s", tokenA.balanceOf(address(router)));
+        // console.log("Liquidity tokenB: %s", tokenB.balanceOf(address(router)));
+        // console.log("Liquidity tokenC: %s", tokenC.balanceOf(address(router)));
+        // console.log("Liquidity tokenD: %s", tokenD.balanceOf(address(router)));
+        // console.log("Liquidity tokenE: %s", tokenE.balanceOf(address(router)));
+
+        address[] memory path = new address[](5);
+        path[0] = address(tokenB);
+        path[1] = address(tokenA);
+        path[2] = address(tokenD);
+        path[3] = address(tokenC);
+        path[4] = address(tokenB);
+        // path[5] = address(tokenC);
+        // path[6] = address(tokenE);
+        // path[7] = address(tokenD);
+        // path[8] = address(tokenC);
+        // path[9] = address(tokenB);
+
+        uint256[] memory amounts = router.getAmountsOut(5 ether, path);
+        // console.log("getAmountsOut");
+        // for (uint256 i = 0; i < amounts.length; i++) {
+        //     console.log("token%d: %s", i, amounts[i]);
+        // }
+
+        amounts = router.swapExactTokensForTokens(
+            5 ether,
+            0 ether,
+            path,
+            address(arbitrager),
+            block.timestamp
+        );
+        // console.log("swapExactTokensForTokens");
+        // for (uint256 i = 0; i < amounts.length; i++) {
+        //     console.log("token%d: %s", i, amounts[i]);
+        // }
+
+        // print liquidity
+        // console.log("Liquidity tokenA: %s", tokenA.balanceOf(address(router)));
+        // console.log("Liquidity tokenB: %s", tokenB.balanceOf(address(router)));
+        // console.log("Liquidity tokenC: %s", tokenC.balanceOf(address(router)));
+        // console.log("Liquidity tokenD: %s", tokenD.balanceOf(address(router)));
+        // console.log("Liquidity tokenE: %s", tokenE.balanceOf(address(router)));
+
         /**
          * Please add your solution above
          */
