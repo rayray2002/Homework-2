@@ -50,7 +50,7 @@ Please examine the mint function in the UniswapV2Pair contract. Upon initial liq
 
 > Solution
 >
-> In the Uniswap V2, when the first liquidity provider supplies liquidity to a new pool, a certain amount of liquidity tokens, known as "minimum liquidity," is permanently locked in the pool. This is done by minting the minimum liquidity amount and sending it to the zero address. The rationale behind this design is to avoid issues with rounding errors and to prevent someone from owning an entire pool with a very small initial investment.
+> When the first liquidity provider supplies liquidity to a new pool, a certain amount of liquidity tokens, known as "minimum liquidity," is permanently locked in the pool (`liquidity = Math.sqrt(amount0.mul(amount1)).sub(MINIMUM_LIQUIDITY)`). This is done by minting the minimum liquidity amount and sending it to the zero address. The rationale behind this design is to avoid issues with rounding errors and to prevent someone from owning an entire pool with a very small initial investment.
 
 ## Problem 4
 
@@ -58,7 +58,32 @@ Investigate the minting function in the UniswapV2Pair contract. When depositing 
 
 > Solution
 >
-> The minting function in the UniswapV2Pair contract uses a specific formula (min of two ratio) to determine the amount of liquidity tokens that a liquidity provider receives when depositing tokens into the pool. This formula is designed to maintain the ratio of the liquidity provider's share in the pool relative to the total liquidity.
+> The minting function in the UniswapV2Pair contract uses a specific formula (min of two ratio: `liquidity = Math.min(amount0.mul(_totalSupply) / _reserve0, amount1.mul(_totalSupply) / _reserve1)`) to determine the amount of liquidity tokens that a liquidity provider receives when depositing tokens into the pool. This formula is designed to maintain the ratio of the liquidity provider's share in the pool relative to the total liquidity.
+
+```solidity
+function mint(address to) external lock returns (uint liquidity) {
+    (uint112 _reserve0, uint112 _reserve1,) = getReserves(); // gas savings
+    uint balance0 = IERC20(token0).balanceOf(address(this));
+    uint balance1 = IERC20(token1).balanceOf(address(this));
+    uint amount0 = balance0.sub(_reserve0);
+    uint amount1 = balance1.sub(_reserve1);
+
+    bool feeOn = _mintFee(_reserve0, _reserve1);
+    uint _totalSupply = totalSupply; // gas savings, must be defined here since totalSupply can update in _mintFee
+    if (_totalSupply == 0) {
+        liquidity = Math.sqrt(amount0.mul(amount1)).sub(MINIMUM_LIQUIDITY);
+        _mint(address(0), MINIMUM_LIQUIDITY); // permanently lock the first MINIMUM_LIQUIDITY tokens
+    } else {
+        liquidity = Math.min(amount0.mul(_totalSupply) / _reserve0, amount1.mul(_totalSupply) / _reserve1);
+    }
+    require(liquidity > 0, 'UniswapV2: INSUFFICIENT_LIQUIDITY_MINTED');
+    _mint(to, liquidity);
+
+    _update(balance0, balance1, _reserve0, _reserve1);
+    if (feeOn) kLast = uint(reserve0).mul(reserve1); // reserve0 and reserve1 are up-to-date
+    emit Mint(msg.sender, amount0, amount1);
+}
+```
 
 ## Problem 5
 
