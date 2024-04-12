@@ -102,11 +102,15 @@ contract Arbitrage is Test {
         path[2] = address(tokenD);
         path[3] = address(tokenC);
         path[4] = address(tokenB);
+
+        // address[] memory path = new address[](7);
+        // path[0] = address(tokenB);
+        // path[1] = address(tokenD);
+        // path[2] = address(tokenC);
+        // path[3] = address(tokenE);
+        // path[4] = address(tokenD);
         // path[5] = address(tokenC);
-        // path[6] = address(tokenE);
-        // path[7] = address(tokenD);
-        // path[8] = address(tokenC);
-        // path[9] = address(tokenB);
+        // path[6] = address(tokenB);
 
         uint256[] memory amounts = router.getAmountsOut(5 ether, path);
         // console.log("getAmountsOut");

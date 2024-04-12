@@ -82,7 +82,8 @@ def find_arbitrage_path(
 if __name__ == "__main__":
     # find_arbitrage_path(liquidity)
     best_path, best_balance = find_arbitrage_path(
-        liquidity, path=["tokenB"], max_depth=5
+        liquidity, path=["tokenB"], max_depth=6
     )
     final_balance = get_amounts_out(5, best_path)
     print(f"path: {'->'.join(best_path)}, tokenB balance={final_balance[-1]:.6f}.")
+    # print(f"final balance: {final_balance}")
